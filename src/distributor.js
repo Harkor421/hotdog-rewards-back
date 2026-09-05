@@ -84,6 +84,17 @@ export function createDistributor({ onEvent, db }) {
   // deploy is still better than no counter.
   const session = { hotDogs: 0, usd: 0, rounds: 0, people: new Set() }
 
+  /**
+   * The last round that was served, kept in memory.
+   *
+   * A round takes seconds and the gap between them is five minutes, so almost
+   * everybody who opens the page arrives while nothing is happening. Without
+   * this they would stare at an empty queue until the next bell and reasonably
+   * conclude the thing does not work. The receipt book can't cover it either —
+   * it is optional, and this has to work without one.
+   */
+  let lastServed = null
+
   const emit = (e) => onEvent({ ...e, ts: e.ts ?? now() })
   const bsAuth = () => (c.blockscoutKey ? { apikey: c.blockscoutKey } : {})
   const explorerTx = (hash) => `${c.explorer}/tx/${hash}`
@@ -1005,6 +1016,23 @@ export function createDistributor({ onEvent, db }) {
         demo: !!holders?.demo,
       })
 
+      lastServed = {
+        round,
+        served: items.length,
+        hotDogs: totalHotDogs,
+        totalUsd: sentUsd,
+        perHolderUsd: bill.perHolderUsd,
+        hotDogsEach: bill.perHolderUsd != null ? bill.perHolderUsd / config.hotDogUsd : null,
+        shortfall: bill.shortfall,
+        asset: asset.symbol,
+        // Bounded: this rides in every `hello`, and a 500-wallet round would
+        // make the handshake heavier than the page.
+        items: items.slice(0, 120),
+        dryRun,
+        demo: !!holders?.demo,
+        at: now(),
+      }
+
       emit({
         type: 'serveResult',
         round,
@@ -1155,6 +1183,7 @@ export function createDistributor({ onEvent, db }) {
     probe,
     simulate,
     potSnapshot: () => pot,
+    lastRound: () => lastServed,
     sessionTotals: () => ({
       hotDogs: session.hotDogs,
       usd: session.usd,
