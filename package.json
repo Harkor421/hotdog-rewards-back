@@ -1,0 +1,19 @@
+{
+  "name": "costco-back",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Every five minutes, the COSTCO treasury pays a hot dog — one dollar — to every wallet holding the coin. Same holder detection, exclusions and on-chain verification as Stock Royale, retargeted from a stock airdrop to a flat dollar.",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "demo": "DEMO_HOLDERS=42 node src/index.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ethers": "^6.17.0",
+    "mongodb": "^6.21.0",
+    "ws": "^8.18.0"
+  }
+}
