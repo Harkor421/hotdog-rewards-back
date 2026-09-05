@@ -31,6 +31,7 @@ export function createHub({ port, rounds, db }) {
       history: rounds.history.slice(0, 12),
       service: distributor?.snapshot() ?? null,
       pot: distributor?.potSnapshot() ?? null,
+      lastRound: distributor?.lastRound() ?? null,
       session: distributor?.sessionTotals() ?? null,
       viewers: clients.size,
     }
