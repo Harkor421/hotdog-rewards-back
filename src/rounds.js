@@ -3,7 +3,7 @@
 //
 // Stock Royale needed a round engine because something had to WIN a round: a
 // tape came in, armies moved, a winner was crowned and the winner decided what
-// got bought. COSTCO has no contest. The bell rings, everybody eats.
+// got bought. Hotdog Rewards has no contest. The bell rings, everybody eats.
 //
 // So what is left of that engine is the part that mattered anyway: rounds are
 // aligned to the WALL CLOCK (…:00, :05, :10 …) rather than to the moment the

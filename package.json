@@ -1,9 +1,9 @@
 {
-  "name": "costco-back",
+  "name": "hotdog-rewards-back",
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "Every five minutes, the COSTCO treasury pays a hot dog — one dollar — to every wallet holding the coin. Same holder detection, exclusions and on-chain verification as Stock Royale, retargeted from a stock airdrop to a flat dollar.",
+  "description": "Every five minutes, the Hotdog Rewards treasury pays a hot dog — one dollar — to every wallet holding $HDR. Same holder detection, exclusions and on-chain verification as Stock Royale, retargeted from a stock airdrop to a flat dollar.",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",

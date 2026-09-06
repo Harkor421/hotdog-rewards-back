@@ -1,7 +1,7 @@
-# 🌭 COSTCO — Backend
+# 🌭 Hotdog Rewards — Backend
 
 **Every five minutes, a hot dog.** One dollar, to every wallet holding
-[`$COSTCO`](#the-coin). Not a slice of a pot weighted by how rich you are — the
+`$HDR`. Not a slice of a pot weighted by how rich you are — the
 same dollar for everyone in the queue, because that is what a hot dog costs and
 everybody is buying the same hot dog.
 

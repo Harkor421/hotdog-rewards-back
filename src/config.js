@@ -1,8 +1,8 @@
 // ============================================================================
 // config.js — every tunable in one place.
 //
-// COSTCO pays a hot dog. A hot dog is one dollar. Every five minutes, every
-// wallet holding the coin gets one.
+// Hotdog Rewards pays a hot dog. A hot dog is one dollar. Every five minutes,
+// every wallet holding $HDR gets one.
 //
 // The machinery underneath is Stock Royale's, unchanged where it matters:
 // the same holder detection, the same pool / bonding-curve exclusion, the same
@@ -56,7 +56,7 @@ export const config = {
     blockscoutKey: process.env.BLOCKSCOUT_API_KEY || '',
     explorer: (process.env.EXPLORER_URL || 'https://robinhoodchain.blockscout.com').replace(/\/$/, ''),
 
-    /** $COSTCO itself — the coin you have to hold to be fed. */
+    /** $HDR itself — the coin you have to hold to be fed. */
     token: (process.env.TOKEN || '').trim().toLowerCase(),
     /** The treasury. Holds the money, pays the gas. NEVER commit a real key. */
     privateKey: process.env.DISTRIBUTOR_PRIVATE_KEY || '',
@@ -212,9 +212,18 @@ export const config = {
     '',
 }
 
-/** The coin, as the frontend should name it. Overridable; read on-chain if unset. */
+/**
+ * The brand, as the frontend should render it.
+ *
+ * `name` and `coin` are deliberately separate: the product is Hotdog Rewards
+ * and the ticker is $HDR, and a page that says "holding $Hotdog Rewards"
+ * because someone collapsed the two is the kind of thing nobody notices until
+ * it is on screen. The on-chain symbol is read from the contract and wins over
+ * `coin` once a token is configured.
+ */
 export const BRAND = Object.freeze({
-  coin: process.env.COIN_NAME || 'COSTCO',
+  name: process.env.SITE_NAME || 'Hotdog Rewards',
+  coin: process.env.COIN_NAME || 'HDR',
   item: process.env.ITEM_NAME || 'hot dog',
   itemPlural: process.env.ITEM_PLURAL || 'hot dogs',
 })

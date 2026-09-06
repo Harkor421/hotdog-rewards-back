@@ -2,7 +2,7 @@
 // distributor.js — the counter. This is where the hot dogs come from.
 //
 // Every five minutes the bell rings and the treasury pays ONE DOLLAR to every
-// wallet holding $COSTCO. Not a share of a pot, not a slice weighted by how
+// wallet holding $HDR. Not a share of a pot, not a slice weighted by how
 // rich you are — a dollar, the same dollar, because that is what a hot dog
 // costs and everybody in the queue is buying the same hot dog.
 //
@@ -112,7 +112,7 @@ export function createDistributor({ onEvent, db }) {
   // with no User-Agent — which is what bare fetch() sends. Found the hard way:
   // holder detection simply returned nothing, with no error pointing at a cause.
   const HTTP_HEADERS = {
-    'user-agent': 'costco-hotdog/1.0 (+https://github.com/Harkor421/costco-back)',
+    'user-agent': 'hotdog-rewards/1.0 (+https://github.com/Harkor421/hotdog-rewards-back)',
     accept: 'application/json',
   }
 
@@ -218,7 +218,7 @@ export function createDistributor({ onEvent, db }) {
         } catch {}
       }
     } catch (e) {
-      console.warn('[costco] pool candidates:', e.message)
+      console.warn('[hdr] pool candidates:', e.message)
     }
   }
 
@@ -258,7 +258,7 @@ export function createDistributor({ onEvent, db }) {
         })
       )
     }
-    if (drift) console.info(`[costco] ${drift}/${take.length} balances corrected against the chain`)
+    if (drift) console.info(`[hdr] ${drift}/${take.length} balances corrected against the chain`)
     return rows
   }
 
@@ -316,7 +316,7 @@ export function createDistributor({ onEvent, db }) {
     }
 
     if (c.chainFallback && chain) {
-      console.warn(`[costco] indexers unavailable (${tried.join(' · ')}) — reading holders off the chain`)
+      console.warn(`[hdr] indexers unavailable (${tried.join(' · ')}) — reading holders off the chain`)
       // Ask the chain what each address holds NOW rather than replaying every
       // transfer the coin has ever made. The logs only discover WHICH addresses
       // to ask about, so this converges in seconds regardless of the coin's age.
@@ -385,7 +385,7 @@ export function createDistributor({ onEvent, db }) {
         const rows = demoHolders()
         holders = { ts: now(), rows, queued: rows.length, supply: 1e9, total: rows.length, demo: true }
         emit({ type: 'holders', count: rows.length, demo: true, source: 'demo' })
-        console.warn(`[costco] DEMO queue of ${rows.length} — no TOKEN configured, nothing here is real`)
+        console.warn(`[hdr] DEMO queue of ${rows.length} — no TOKEN configured, nothing here is real`)
       }
       return
     }
@@ -417,14 +417,14 @@ export function createDistributor({ onEvent, db }) {
       const coverage = tokenTotalSupply > 0n ? Number((crawled * 10000n) / tokenTotalSupply) / 100 : 0
       if (coverage < c.minSupplyCoverage) {
         diagnostics = { ts: now(), token: c.token, coveragePct: coverage, rejected: 'crawl covers too little of the supply' }
-        console.warn(`[costco] crawl covers only ${coverage.toFixed(1)}% of supply (need ${c.minSupplyCoverage}%) — snapshot rejected`)
+        console.warn(`[hdr] crawl covers only ${coverage.toFixed(1)}% of supply (need ${c.minSupplyCoverage}%) — snapshot rejected`)
         return
       }
 
       await verifyBalances(rows)
       const onlyWallets = await keepOnlyWallets(rows)
       if (onlyWallets.removed.length) {
-        console.info(`[costco] ${onlyWallets.removed.length} contract(s) taken out of the queue`)
+        console.info(`[hdr] ${onlyWallets.removed.length} contract(s) taken out of the queue`)
       }
       const live = onlyWallets.rows.filter((r) => r.raw > 0n && r.pct >= c.minPct && r.pct <= c.maxPct)
       live.sort((a, b) => b.amount - a.amount)
@@ -435,7 +435,7 @@ export function createDistributor({ onEvent, db }) {
       // into whichever addresses survived the bad crawl.
       if (lastEligibleCount > 20 && live.length < lastEligibleCount * 0.3) {
         diagnostics = { ts: now(), token: c.token, rejected: 'eligible holders collapsed vs the previous crawl', was: lastEligibleCount, now: live.length }
-        console.warn(`[costco] eligible holders fell ${lastEligibleCount} -> ${live.length} — snapshot rejected as a likely bad crawl`)
+        console.warn(`[hdr] eligible holders fell ${lastEligibleCount} -> ${live.length} — snapshot rejected as a likely bad crawl`)
         return
       }
       lastEligibleCount = live.length
@@ -482,11 +482,11 @@ export function createDistributor({ onEvent, db }) {
       }
       emit({ type: 'holders', count: served.length, queued, capped: queued > served.length, source: holdersSource })
       console.info(
-        `[costco] via ${holdersSource}: ${queued} eligible holder(s) of ${tokenSymbol || c.token} · ` +
+        `[hdr] via ${holdersSource}: ${queued} eligible holder(s) of ${tokenSymbol || c.token} · ` +
           `${poolSet.size} pool/curve excluded (${poolPct.toFixed(1)}% of supply) · crawl covered ${coverage.toFixed(1)}%`
       )
     } catch (e) {
-      console.error('[costco] holders poll:', e.message)
+      console.error('[hdr] holders poll:', e.message)
     }
   }
 
@@ -682,7 +682,7 @@ export function createDistributor({ onEvent, db }) {
       }
       emit({ type: 'pot', ...pot })
     } catch (e) {
-      console.warn('[costco] till:', e.message)
+      console.warn('[hdr] till:', e.message)
     }
   }
 
@@ -816,7 +816,7 @@ export function createDistributor({ onEvent, db }) {
   async function serve(round) {
     if (!enabled) return
     if (busy) {
-      console.warn('[costco] previous round still serving — skipping this bell')
+      console.warn('[hdr] previous round still serving — skipping this bell')
       return
     }
     const rows = holders?.rows || []
@@ -955,7 +955,7 @@ export function createDistributor({ onEvent, db }) {
         const need = BigInt(plan.length + 2) * gasLimit * maxFee
         const native = await provider.getBalance(wallet.address)
         if (native < need) {
-          console.warn(`[costco] gas ${fmtUnits(native, 18)} ETH < ~${fmtUnits(need, 18)} needed for ${plan.length} sends`)
+          console.warn(`[hdr] gas ${fmtUnits(native, 18)} ETH < ~${fmtUnits(need, 18)} needed for ${plan.length} sends`)
         }
 
         let nonce = await wallet.getNonce()
@@ -992,7 +992,7 @@ export function createDistributor({ onEvent, db }) {
           record(p, hash)
           await sleep(c.sendDelayMs)
         }
-        if (failures) console.warn(`[costco] ${failures} transfer(s) failed this round`)
+        if (failures) console.warn(`[hdr] ${failures} transfer(s) failed this round`)
       }
 
       const totalHotDogs = sentUsd / config.hotDogUsd
@@ -1050,11 +1050,11 @@ export function createDistributor({ onEvent, db }) {
         demo: !!holders?.demo,
       })
       console.info(
-        `[costco]${dryRun ? ' DRY' : ''} round ${round?.label}: ${items.length} fed · ` +
+        `[hdr]${dryRun ? ' DRY' : ''} round ${round?.label}: ${items.length} fed · ` +
           `${totalHotDogs.toFixed(2)} ${BRAND.itemPlural} · $${sentUsd.toFixed(2)}`
       )
     } catch (e) {
-      console.error('[costco] round failed:', e.message)
+      console.error('[hdr] round failed:', e.message)
       emit({ type: 'serveError', round, message: String(e.message || e) })
       // The bell rang whether or not money moved. Record it either way, so an
       // empty history means "nobody has been fed" and never "the recorder broke".
@@ -1225,11 +1225,11 @@ export function createDistributor({ onEvent, db }) {
       if (!enabled) {
         if (isAddr(c.token)) loadTokenMeta()
         if (c.demoHolders > 0) pollHolders()
-        console.info(`[costco] payouts disabled (set PAYOUTS=1 to arm)${wallet ? ' — till balance still published' : ''}`)
+        console.info(`[hdr] payouts disabled (set PAYOUTS=1 to arm)${wallet ? ' — till balance still published' : ''}`)
         return
       }
       console.info(
-        `[costco] armed${dryRun ? ' in DRY RUN — no funds move' : ''} · ${c.mode} · $${config.hotDogUsd} per holder ` +
+        `[hdr] armed${dryRun ? ' in DRY RUN — no funds move' : ''} · ${c.mode} · $${config.hotDogUsd} per holder ` +
           `· coin ${c.token || '(unset)'} · till ${wallet ? wallet.address : '(no key)'}`
       )
       pollHolders()

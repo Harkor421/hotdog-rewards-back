@@ -35,7 +35,7 @@ rounds.start()
 distributor.start()
 
 console.info(
-  `[index] ${BRAND.coin} ready — one ${BRAND.item} ($${config.hotDogUsd}) to every holder ` +
+  `[index] ${BRAND.name} ready — one ${BRAND.item} ($${config.hotDogUsd}) to every holder ` +
     `every ${config.roundMs / 60000} minutes.`
 )
 
