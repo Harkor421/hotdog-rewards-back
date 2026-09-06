@@ -813,12 +813,28 @@ export function createDistributor({ onEvent, db }) {
    * instant it is broadcast, so a crash half way through leaves a receipt book
    * that matches the chain rather than one that forgot the first half.
    */
+  let warnedUnconfigured = false
+
   async function serve(round) {
     if (!enabled) return
     if (busy) {
       console.warn('[hdr] previous round still serving — skipping this bell')
       return
     }
+    // Armed, but there is no coin yet.
+    //
+    // Not an error, and emphatically not one to record every round: with a
+    // five-second bell that is twelve failed rounds a minute filling the
+    // history and the log with "nobody in the queue" before the token even
+    // exists. Say it once and wait quietly for the address.
+    if (!isAddr(c.token) && !holders?.demo) {
+      if (!warnedUnconfigured) {
+        warnedUnconfigured = true
+        console.info('[hdr] armed and waiting — set TOKEN to the coin address and rounds start paying')
+      }
+      return
+    }
+    warnedUnconfigured = false
     const rows = holders?.rows || []
     busy = true
     try {
