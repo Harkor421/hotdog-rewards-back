@@ -246,6 +246,7 @@ process — serverless cannot host it. The server binds `process.env.PORT` and
 answers `GET /`, so Railway deploys it as-is.
 
 1. `railway init` → `railway up`, or connect the GitHub repo.
+   **Live: `wss://hotdog-rewards-back-production.up.railway.app`**
 2. Set at minimum: `TOKEN`, `DISTRIBUTOR_PRIVATE_KEY`, `PAYOUTS`, `DRY_RUN`.
 3. Networking → generate a domain. The frontend's `NEXT_PUBLIC_BACKEND_URL` is
    `wss://<domain>`.
