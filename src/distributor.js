@@ -718,16 +718,40 @@ export function createDistributor({ onEvent, db }) {
    * other half eats is a different product.
    */
   function budget({ people, spendableUsd }) {
-    const want = c.mode === 'flat' ? people * config.hotDogUsd : roundCapUsd(spendableUsd)
     const cap = roundCapUsd(spendableUsd)
-    const total = Math.min(want, cap)
-    const perHolderUsd = c.mode === 'flat' && people > 0 ? total / people : null
+
+    if (c.mode !== 'flat') {
+      return { totalUsd: cap, perHolderUsd: null, payable: people, waiting: 0, wantedUsd: cap, capUsd: cap, shortfall: false }
+    }
+
+    const price = config.hotDogUsd
+    const want = people * price
+
+    // The till covers everybody. The normal case.
+    if (want <= cap + 1e-9) {
+      return { totalUsd: want, perHolderUsd: price, payable: people, waiting: 0, wantedUsd: want, capUsd: cap, shortfall: false }
+    }
+
+    // It does not. Two ways to be short, and they are different promises.
+    if (c.shortfallMode === 'split') {
+      // Everybody eats less. Fair, and it breaks the headline: a page that
+      // says $1.50 and pays $1.32 is wrong even when the arithmetic is right.
+      return { totalUsd: cap, perHolderUsd: cap / people, payable: people, waiting: 0, wantedUsd: want, capUsd: cap, shortfall: true }
+    }
+
+    // Default: A HOT DOG IS $1.50 OR IT IS NOT A HOT DOG.
+    //
+    // Pay full price to as many as the till covers and let the rest wait for
+    // the next bell. Nobody is ever handed a fraction and told it was lunch.
+    const payable = Math.floor((cap + 1e-9) / price)
     return {
-      totalUsd: total,
-      perHolderUsd,
+      totalUsd: payable * price,
+      perHolderUsd: payable > 0 ? price : null,
+      payable,
+      waiting: people - payable,
       wantedUsd: want,
       capUsd: cap,
-      shortfall: c.mode === 'flat' && total < want - 1e-9,
+      shortfall: true,
     }
   }
 
@@ -894,7 +918,8 @@ export function createDistributor({ onEvent, db }) {
       emit({
         type: 'serveStart',
         round,
-        people,
+        people: bill.payable ?? people,
+        waiting: bill.waiting ?? 0,
         queued: holders?.queued ?? people,
         capped: !!holders?.capped,
         perHolderUsd: bill.perHolderUsd,
@@ -922,9 +947,17 @@ export function createDistributor({ onEvent, db }) {
 
       let plan
       if (c.mode === 'flat') {
+        if (!bill.payable) {
+          throw new Error(
+            `the till cannot cover a single ${BRAND.item} at $${config.hotDogUsd.toFixed(2)} ` +
+              `(it holds $${bill.capUsd.toFixed(2)} spendable). Nothing was sent: a part payment is not a ${BRAND.item}.`
+          )
+        }
         const each = unitsPerUsd(bill.perHolderUsd)
         if (each <= 0n) throw new Error('a share of this round rounds to zero — the till is too thin to split')
-        plan = rows.map((r) => ({ ...r, raw_out: each, usd: bill.perHolderUsd }))
+        // rows are sorted largest holder first, so a short round serves the
+        // front of the queue and the rest keep their place for the next bell
+        plan = rows.slice(0, bill.payable).map((r) => ({ ...r, raw_out: each, usd: bill.perHolderUsd }))
       } else {
         const totalRaw = unitsPerUsd(bill.totalUsd)
         const totalW = rows.reduce((a, r) => a + r.raw, 0n)
@@ -1080,6 +1113,7 @@ export function createDistributor({ onEvent, db }) {
         type: 'serveResult',
         round,
         served: items.length,
+        waiting: bill.waiting ?? 0,
         hotDogs: totalHotDogs,
         totalUsd: sentUsd,
         perHolderUsd: bill.perHolderUsd,

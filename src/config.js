@@ -103,6 +103,19 @@ export const config = {
     mode: (process.env.PAYOUT_MODE || 'flat').toLowerCase(),
 
     /**
+     * ---- WHAT HAPPENS WHEN THE TILL IS SHORT ----
+     *
+     * `full`  (default) Pay the full HOTDOG_USD to as many holders as the till
+     *         covers; the rest keep their place for the next bell. A hot dog is
+     *         $1.50 or it is not a hot dog, and a page that promises $1.50 and
+     *         pays $1.32 is wrong even when the arithmetic is right.
+     *
+     * `split` Divide what there is equally, so everybody gets a fraction. Fair
+     *         in its own way, and it breaks the headline.
+     */
+    shortfallMode: (process.env.SHORTFALL_MODE || 'full').toLowerCase(),
+
+    /**
      * The brake. A round never spends more than this share of the treasury,
      * whatever the holder count says it owes.
      *
