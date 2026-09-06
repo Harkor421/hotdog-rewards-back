@@ -1,8 +1,8 @@
 // ============================================================================
 // config.js — every tunable in one place.
 //
-// Hotdog Rewards pays a hot dog. A hot dog is one dollar. Every five minutes,
-// every wallet holding $HDR gets one.
+// Hotdog Rewards pays a hot dog. A hot dog is $1.50. Every round, every wallet
+// holding $HDR gets one.
 //
 // The machinery underneath is Stock Royale's, unchanged where it matters:
 // the same holder detection, the same pool / bonding-curve exclusion, the same
@@ -27,13 +27,12 @@ export const config = {
   /**
    * THE HOT DOG.
    *
-   * $1.50 is what one actually costs at the counter today; $1 is what the
-   * legend says, and the legend is what the coin is named after. One dollar,
-   * one hot dog, every five minutes — change it here and every number on the
-   * frontend follows, because the frontend is told the price rather than
-   * hard-coding it.
+   * $1.50 is what one costs at the counter, so $1.50 is what a holder gets.
+   * Change it here and every figure on the frontend follows: the headline, the
+   * per-round split, the runway and the totals are all derived from this, and
+   * the page is told the price rather than hard-coding it.
    */
-  hotDogUsd: num(process.env.HOTDOG_USD, 1),
+  hotDogUsd: num(process.env.HOTDOG_USD, 1.5),
 
   chain: {
     /** Nothing pays until this is 1. */
@@ -129,8 +128,8 @@ export const config = {
      *
      * MIN_ELIGIBLE_PCT is that floor, and it is also a cap on the bill: at
      * 0.1%, at most 1,000 wallets can ever qualify, so a round costs at most
-     * $1,000 no matter what happens. Raise it to make the coin harder to farm,
-     * lower it to feed more people. Do not set it to zero.
+     * 1,000 hot dogs no matter what happens. Raise it to make the coin harder
+     * to farm, lower it to feed more people. Do not set it to zero.
      */
     minPct: num(process.env.MIN_ELIGIBLE_PCT, 0.1),
     /** Whales are people too, but a wallet this large is usually the team. */
