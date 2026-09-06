@@ -1,6 +1,6 @@
 # 🌭 Hotdog Rewards — Backend
 
-**Every five minutes, a hot dog.** One dollar, to every wallet holding
+**Every round, a hot dog.** $1.50, to every wallet holding
 `$HDR`. Not a slice of a pot weighted by how rich you are — the
 same dollar for everyone in the queue, because that is what a hot dog costs and
 everybody is buying the same hot dog.
@@ -8,7 +8,7 @@ everybody is buying the same hot dog.
 The machinery underneath is [Stock Royale](https://github.com/Harkor421/stock-royale-back)'s,
 carried over where it matters. That project bought the winning stock at the bell
 and split it pro-rata among a memecoin's holders; this one skips the contest and
-hands out a flat dollar. **The half that decides *who* gets paid is unchanged** —
+hands out a flat $1.50. **The half that decides *who* gets paid is unchanged** —
 the same three holder sources, the same pool and bonding-curve exclusion, the
 same `eth_getCode` on every recipient, the same four refusals. That code was
 expensive to get right and none of what it knows stopped being true.
@@ -65,7 +65,7 @@ The bell is the only trigger in the system. There is nothing to win.
 roundEnd ──▶ who holds the coin
          ──▶ drop the pools, the curves, the contracts, the dust
          ──▶ re-read every remaining balance off the chain
-         ──▶ send each of them a dollar
+         ──▶ send each of them $1.50
 ```
 
 ## What a dollar is made of
@@ -114,7 +114,7 @@ the supply you have to hold to be a mouth worth feeding.
    buy another 0.1% of the supply and keep holding it — at which point you are
    not an attacker, you are the customer.
 2. **It caps the bill.** At 0.1%, at most **1,000 wallets can ever qualify**, so
-   a round can never cost more than $1,000 no matter what happens.
+   a round can never cost more than 1,000 hot dogs no matter what happens.
 
 `MAX_RECIPIENTS` (default 500) is the belt to that pair of braces: if the queue
 is somehow longer, the largest holders are served and the page is told the queue
