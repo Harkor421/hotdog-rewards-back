@@ -132,7 +132,7 @@ export function createHub({ port, rounds, db }) {
 
     res.writeHead(200, { 'content-type': 'text/plain', 'cache-control': 'no-store', 'access-control-allow-origin': '*' })
     res.end(
-      `${BRAND.coin} — a ${BRAND.item} every ${config.roundMs / 60000} minutes, for everyone holding the coin.\n` +
+      `${BRAND.name} — a ${BRAND.item} every ${config.roundMs / 60000} minutes, for everyone holding $${BRAND.coin}.\n` +
         `${clients.size} viewer(s) · next bell in ${Math.ceil(rounds.msLeft / 1000)}s\n\n` +
         'Connect a WebSocket to this same URL for the live stream.\n' +
         'JSON: /state · /stats · /rounds · /leaderboard · /recent · /wallet/<address>\n' +
@@ -168,7 +168,7 @@ export function createHub({ port, rounds, db }) {
     }
   }
 
-  server.listen(port, () => console.info(`[hub] ${BRAND.coin} listening on :${port}`))
+  server.listen(port, () => console.info(`[hub] ${BRAND.name} listening on :${port}`))
 
   return {
     broadcast,
