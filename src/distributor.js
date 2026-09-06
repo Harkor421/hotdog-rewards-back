@@ -378,8 +378,23 @@ export function createDistributor({ onEvent, db }) {
     }))
   }
 
-  /** Refresh the queue the next bell will feed. */
-  async function pollHolders() {
+  /**
+   * Refresh the queue the next bell will feed.
+   *
+   * Reentrancy guard: the poll interval is 60s and a crawl read off the chain
+   * regularly takes longer than that, so every tick was starting another crawl
+   * on top of the one still running. They then competed for the same RPC
+   * budget and each took longer still. Callers now share the crawl in flight.
+   */
+  let crawlInFlight = null
+
+  function pollHolders() {
+    if (crawlInFlight) return crawlInFlight
+    crawlInFlight = runHolderCrawl().finally(() => { crawlInFlight = null })
+    return crawlInFlight
+  }
+
+  async function runHolderCrawl() {
     if (!isAddr(c.token)) {
       if (c.demoHolders > 0) {
         const rows = demoHolders()
@@ -835,9 +850,21 @@ export function createDistributor({ onEvent, db }) {
       return
     }
     warnedUnconfigured = false
-    const rows = holders?.rows || []
     busy = true
     try {
+      // The first bell after a deploy used to fail every single time.
+      //
+      // Holder detection reads off the chain when the indexers refuse (402 and
+      // 403 are the normal answers here), which takes a minute or so, and the
+      // bell does not wait for boot. So the round found an empty snapshot,
+      // recorded 'nobody in the queue' and skipped five minutes of payouts —
+      // and any redeploy did it again. Waiting on the crawl in flight costs
+      // seconds inside a five-minute round.
+      if (!holders) {
+        console.info('[hdr] no holder snapshot yet — waiting for the crawl before serving')
+        await Promise.race([pollHolders(), sleep(Math.min(120_000, config.roundMs / 2))])
+      }
+      const rows = holders?.rows || []
       if (!rows.length) throw new Error('nobody in the queue: no wallet clears the eligibility floor')
       if (!holders?.demo && now() - (holders?.ts || 0) > c.holdersStaleMs) {
         throw new Error('holder snapshot is stale — refusing to pay out over frozen data')
