@@ -14,6 +14,15 @@ import http from 'http'
 import { WebSocketServer } from 'ws'
 import { config, BRAND } from './config.js'
 
+/** The round interval, said the way a person says it — "5 seconds", not
+ *  "0.08333333333333333 minutes", which is what dividing by 60000 gives you
+ *  the moment a round stops being a whole number of minutes. */
+function everyLabel(ms) {
+  const seconds = Math.round(ms / 1000)
+  const [n, unit] = seconds % 60 === 0 && seconds >= 60 ? [seconds / 60, 'minute'] : [seconds, 'second']
+  return `${n} ${unit}${n === 1 ? '' : 's'}`
+}
+
 export function createHub({ port, rounds, db }) {
   const clients = new Set()
   let distributor = null
@@ -132,7 +141,7 @@ export function createHub({ port, rounds, db }) {
 
     res.writeHead(200, { 'content-type': 'text/plain', 'cache-control': 'no-store', 'access-control-allow-origin': '*' })
     res.end(
-      `${BRAND.name} — a ${BRAND.item} every ${config.roundMs / 60000} minutes, for everyone holding $${BRAND.coin}.\n` +
+      `${BRAND.name} — a ${BRAND.item} every ${everyLabel(config.roundMs)}, for everyone holding $${BRAND.coin}.\n` +
         `${clients.size} viewer(s) · next bell in ${Math.ceil(rounds.msLeft / 1000)}s\n\n` +
         'Connect a WebSocket to this same URL for the live stream.\n' +
         'JSON: /state · /stats · /rounds · /leaderboard · /recent · /wallet/<address>\n' +

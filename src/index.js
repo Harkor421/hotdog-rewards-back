@@ -36,7 +36,7 @@ distributor.start()
 
 console.info(
   `[index] ${BRAND.name} ready — one ${BRAND.item} ($${config.hotDogUsd}) to every holder ` +
-    `every ${config.roundMs / 60000} minutes.`
+    `every ${config.roundMs >= 60_000 ? `${config.roundMs / 60_000} min` : `${config.roundMs / 1000}s`}.`
 )
 
 function shutdown() {
