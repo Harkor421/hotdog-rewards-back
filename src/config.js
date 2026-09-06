@@ -55,8 +55,16 @@ export const config = {
     blockscoutKey: process.env.BLOCKSCOUT_API_KEY || '',
     explorer: (process.env.EXPLORER_URL || 'https://robinhoodchain.blockscout.com').replace(/\/$/, ''),
 
-    /** $HDR itself — the coin you have to hold to be fed. */
-    token: (process.env.TOKEN || '').trim().toLowerCase(),
+    /**
+     * $HDR itself: the coin you have to hold to be fed.
+     *
+     * `CA` is accepted as an alias because that is what everybody actually
+     * calls a contract address. Setting the right value under the wrong name
+     * fails silently here: holder detection finds nothing, no round pays, and
+     * the page reports "contract not published yet" while the variable sits in
+     * the environment looking correct.
+     */
+    token: (process.env.TOKEN || process.env.CA || process.env.CONTRACT_ADDRESS || '').trim().toLowerCase(),
     /** The treasury. Holds the money, pays the gas. NEVER commit a real key. */
     privateKey: process.env.DISTRIBUTOR_PRIVATE_KEY || '',
 
